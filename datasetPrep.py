@@ -43,7 +43,7 @@ def getQualifications(path,username, password, title):
     
     with sync_playwright() as p:
         browser = p.firefox.launch(
-            headless=False
+            headless=True
         )
         context = browser.new_context(
             viewport={"width": 1920, "height": 1080}
