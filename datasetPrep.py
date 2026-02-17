@@ -7,8 +7,13 @@ import requests
 import time
 from playwright.sync_api import sync_playwright
 import os
+from sentence_transformers import SentenceTransformer
+from pypdf import PdfReader
+import kagglehub
+model = SentenceTransformer('all-MiniLM-l6-v2')
 
-def createSet(path2,path, username,password, title):
+
+def createSet(path,username, password, title,path2):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                       "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -43,7 +48,7 @@ def getQualifications(path,username, password, title):
     
     with sync_playwright() as p:
         browser = p.firefox.launch(
-            headless=True
+            headless=False
         )
         context = browser.new_context(
             viewport={"width": 1920, "height": 1080}
@@ -59,7 +64,9 @@ def getQualifications(path,username, password, title):
         page.locator('input#password').fill(password)
         page.locator('button[type="submit"]').click()
 
-        search = page.locator('input[placeholder="Search"]')
+        ##search = page.locator('input[placeholder="Search"]')
+        ##search = page.get_by_role("combobox")
+        search = page.get_by_test_id("typeahead-input")
         
         #search.fill(title)
         
@@ -86,7 +93,11 @@ def getQualifications(path,username, password, title):
             page.wait_for_timeout(6000)
             #use beautifulSoup here to physically scrape the data
             #then the algorithms will used in the proposal
-            print("good")
+            
+            tempURL = page.url
+            response = requests.get(tempURL)
+            print(tempURL)
+            print(response)
             page.go_back(wait_until="domcontentloaded")
         
         
@@ -94,18 +105,36 @@ def getQualifications(path,username, password, title):
         page.pause()
         context.close()
         browser.close()
+
+##https://www.geeksforgeeks.org/python/extract-text-from-pdf-file-using-python/
+def uploadRes(resPath):
+    reader = PdfReader(resPath)
+    print(len(reader.pages))
+    page = reader.pages[0]
+    text = page.extract_text()
+    print(text)
+    configureVec(text)
     
+def configureVec(text):
     
+
+
 if __name__  == "__main__":
     path = 'https://www.linkedin.com/uas/login?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F'
     path2 = 'https://www.worksourceatlanta.org/job-trends/high-demand-occupations/'
-
+    resPath = 'Dufresne_Resume_Spring_2026.pdf'
+    dsRes = 'resDatasets/'
+    
+    
     title = None
     username = 'datasetprepper@gmail.com'
     password = 'one2three!'
-    createSet(path,username, password, title,path2)
-    getQualifications(path,username, password, title)
-    
+    #createSet(path,username, password, title,path2)
+    #getQualifications(path,username, password, title)
+
+    userRes = uploadRes(resPath)
+    path3 = kagglehub.dataset_download("snehaanbhawal/resume-dataset")
+    print("Path to dataset files:", path3)
     #path2 = kagglehub.dataset_download("ravindrasinghrana/job-description-dataset")
     #<input id="username" name="session_key"
     #<input id="password"
