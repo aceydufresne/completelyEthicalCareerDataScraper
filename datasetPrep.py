@@ -11,6 +11,9 @@ from sentence_transformers import SentenceTransformer
 from pypdf import PdfReader
 import kagglehub
 model = SentenceTransformer('all-MiniLM-l6-v2')
+import nltk
+from nltk import PorterStemmer
+from nltk.corpus import stopwords
 
 
 def createSet(path,username, password, title,path2):
@@ -112,14 +115,36 @@ def uploadRes(resPath):
     print(len(reader.pages))
     page = reader.pages[0]
     text = page.extract_text()
-    print(text)
+    #print(text)
     configureVec(text)
     
+##https://www.youtube.com/watch?v=OlhNZg4gOvA
 def configureVec(text):
+    words = text.split()
+    #print(words)
     
+    windows = []
+    i = 0
+    temp = True
+    while temp:
+        sentence = []
+        i = 0
+        for word in words:
+            ##window size = 10
+            if i > 10:
+                windows.append(sentence)
+                continue
+            elif i <= 10:
+                sentence.append(word)
+    print(windows)
+    for sentence in windows:
+        embeddings = model.encode(sentence)
+            
+        
 
 
 if __name__  == "__main__":
+    nltk.download("stopwords")
     path = 'https://www.linkedin.com/uas/login?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F'
     path2 = 'https://www.worksourceatlanta.org/job-trends/high-demand-occupations/'
     resPath = 'Dufresne_Resume_Spring_2026.pdf'
@@ -132,9 +157,12 @@ if __name__  == "__main__":
     #createSet(path,username, password, title,path2)
     #getQualifications(path,username, password, title)
 
-    userRes = uploadRes(resPath)
-    path3 = kagglehub.dataset_download("snehaanbhawal/resume-dataset")
-    print("Path to dataset files:", path3)
+    #userRes = uploadRes(resPath)
+    #path3 = kagglehub.dataset_download("snehaanbhawal/resume-dataset")
+    #print("Path to dataset files:", path3)
+    
+    uploadRes(resPath)
+    
     #path2 = kagglehub.dataset_download("ravindrasinghrana/job-description-dataset")
     #<input id="username" name="session_key"
     #<input id="password"
