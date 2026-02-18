@@ -126,20 +126,36 @@ def configureVec(text):
     windows = []
     i = 0
     temp = True
-    while temp:
-        sentence = []
-        i = 0
-        for word in words:
-            ##window size = 10
-            if i > 10:
-                windows.append(sentence)
-                continue
-            elif i <= 10:
-                sentence.append(word)
-    print(windows)
-    for sentence in windows:
-        embeddings = model.encode(sentence)
-            
+    sentence = []
+    for word in words:
+        if i <= 10:
+            #window/kernel size is 10
+            sentence.append(word)
+            i+=1
+        elif i>10:
+            i = 1
+            windows.append(sentence)
+            #sentence = sentence.clear()
+            sentence = []
+    #https://www.youtube.com/watch?v=OlhNZg4gOvA
+    #print(windows[0])
+    for sentences in windows:
+        embeddings = model.encode(sentences)
+    #print(embeddings)
+    findCos(embeddings)
+
+def findCos(embeddings):
+    coOccur = []
+    for vector1 in embeddings:
+        for vector2 in embeddings:
+            tempVec = []
+            #both vectors are in r^384
+            for val in range(len(vector1)):
+                #co-occurence matrix
+                tempVec.append(vector1 * vector2)
+            coOccur.append(tempVec)
+            tempVec = []
+    print(coOccur)
         
 
 
